@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from copy import deepcopy
 import heapq
 from typing import List, Optional
 
@@ -10,8 +11,8 @@ class Simulator(ABC):
 
     def __init__(self, sources_amount: int, devices_amount: int, target_amount_of_requests: int):
         super().__init__()
-        self._sources: List[SourceStatistics] = [SourceStatistics() for i in range(sources_amount)]
-        self._devices: List[DeviceStatistics] = [DeviceStatistics() for i in range(devices_amount)]
+        self._sources: List[SourceStatistics] = [SourceStatistics() for _ in range(sources_amount)]
+        self._devices: List[DeviceStatistics] = [DeviceStatistics() for _ in range(devices_amount)]
         self.__special_events: List[SpecialEvent] = []
         self.__current_amount_of_request = 0
         self.__target_amount_of_requests = target_amount_of_requests
@@ -28,8 +29,8 @@ class Simulator(ABC):
             self.__step()
 
     def reset(self) -> None:
-        self._sources = [SourceStatistics() for i in range(len(self._sources))]
-        self._devices = [DeviceStatistics() for i in range(len(self._devices))]
+        self._sources = [SourceStatistics() for _ in range(len(self._sources))]
+        self._devices = [DeviceStatistics() for _ in range(len(self._devices))]
         self.__special_events = []
         self.__current_amount_of_request = 0
         self.__rejected_amount = 0
@@ -41,6 +42,30 @@ class Simulator(ABC):
 
     def is_completed(self) -> bool:
         return self.__special_events
+
+    @property
+    def current_amount_of_requests(self) -> int:
+        return self.__current_amount_of_request
+    
+    @property
+    def target_amount_of_requests(self) -> int:
+        return self.__target_amount_of_requests
+    
+    @property
+    def rejected_amount(self) -> int:
+        return self.__rejected_amount
+    
+    @property   
+    def current_simulation_time(self) -> int:
+        return self.__current_simulation_time
+    
+    @property
+    def source_statistics(self) -> List[SourceStatistics]:
+        return deepcopy(self._sources)
+
+    @property
+    def device_statistics(self) -> List[DeviceStatistics]:
+        return deepcopy(self._devices)
 
     @abstractmethod
     def _put_in_buffer(self, request: Request) -> Optional[Request]:
@@ -65,9 +90,9 @@ class Simulator(ABC):
     def _add_special_event(self, event: SpecialEvent) -> None:
         match event.event_type:
             case SpecialEventType.GENERATE_NEW_REQUEST:
-                self._sources[event.id].next_request_time = event.planned_time
+                self._sources[event.event_id].next_request_time = event.planned_time
             case SpecialEventType.DEVICE_RELEASE:
-                self._devices[event.id].next_request_time = event.planned_time
+                self._devices[event.event_id].next_request_time = event.planned_time
         
         heapq.heappush(self.__special_events, event)
 
@@ -76,9 +101,9 @@ class Simulator(ABC):
         self.__current_simulation_time = current_event.planned_time
         match current_event.event_type:
             case SpecialEventType.GENERATE_NEW_REQUEST:
-                self.__handle_new_request(current_event.id)
+                self.__handle_new_request(current_event.event_id)
             case SpecialEventType.DEVICE_RELEASE:
-                self.__handle_device_release(current_event.id)
+                self.__handle_device_release(current_event.event_id)
         return current_event
 
     def __handle_new_request(self, source_id: int) -> None:

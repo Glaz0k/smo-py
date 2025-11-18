@@ -18,12 +18,12 @@ class SpecialEventType(Enum):
 class SpecialEvent:
     planned_time: int
     event_type: SpecialEventType
-    id: int
+    event_id: int
 
     def __lt__(self, other: Self):
         if (self.planned_time != other.planned_time):
             return self.planned_time < other.planned_time
         if (self.event_type != other.event_type):
             return self.event_type < other.event_type
-        return self.id < other.id
+        return self.event_id < other.event_id
     
