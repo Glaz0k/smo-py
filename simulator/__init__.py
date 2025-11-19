@@ -1,6 +1,6 @@
 from .components import Request, SpecialEventType, SpecialEvent
 from .simulator import Simulator
-from .statistics import SourceStatistics, DeviceStatistics
+from .statistics import SourceStatistics, DeviceStatistics, MAX_TIME
 
 __all__ = [
     'Request',
@@ -8,5 +8,6 @@ __all__ = [
     'SpecialEvent',
     'Simulator',
     'SourceStatistics',
-    'DeviceStatistics'
+    'DeviceStatistics',
+    'MAX_TIME'
 ]

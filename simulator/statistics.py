@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import sys
 from typing import Final, Optional
 
@@ -18,7 +18,7 @@ class ElementStatistics:
         return self.time / generated
     
     def variance_time(self, generated: int) -> float:
-        return self.time_sqr / generated - self.avg_time() ** 2
+        return self.time_sqr / generated - self.avg_time(generated) ** 2
     
     def add_time(self, time: int) -> None:
         self.time += time
@@ -29,8 +29,8 @@ class SourceStatistics:
     generated: int = 0
     rejected: int = 0
     next_request_time: int = 0
-    buffer_stats: ElementStatistics = ElementStatistics()
-    device_stats: ElementStatistics = ElementStatistics()
+    buffer_stats: ElementStatistics = field(default_factory=ElementStatistics)
+    device_stats: ElementStatistics = field(default_factory=ElementStatistics)
 
     def avg_buffer_time(self) -> float:
         return self.buffer_stats.avg_time(self.generated)

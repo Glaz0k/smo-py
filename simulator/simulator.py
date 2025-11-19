@@ -41,7 +41,7 @@ class Simulator(ABC):
         self.__target_amount_of_requests = target_amount_of_requests
 
     def is_completed(self) -> bool:
-        return self.__special_events
+        return len(self.__special_events) == 0
 
     @property
     def current_amount_of_requests(self) -> int:
@@ -148,7 +148,7 @@ class Simulator(ABC):
 
     def __occupy_next_device(self, request: Request) -> bool:
         device_id = self._pick_device()
-        if (not device_id):
+        if (device_id is None):
             return False
         
         device = self._devices[device_id]

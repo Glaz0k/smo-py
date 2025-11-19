@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import Enum
+from enum import IntEnum
 from typing import Self
 
 
@@ -9,7 +9,7 @@ class Request:
     number: int
     generation_time: int
 
-class SpecialEventType(Enum):
+class SpecialEventType(IntEnum):
     END_OF_SIMULATION = 0
     GENERATE_NEW_REQUEST = 1
     DEVICE_RELEASE = 2
