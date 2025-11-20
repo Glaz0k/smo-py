@@ -5,9 +5,7 @@ from enum import Enum
 from random import Random
 from typing import Callable, Deque, List, Optional, Tuple
 
-from simulator.components import Request, SpecialEvent, SpecialEventType
-from simulator.simulator import Simulator
-from simulator.statistics import DeviceStatistics
+from simulator import Request, SpecialEvent, SpecialEventType, Simulator, DeviceStatistics
 
 
 @dataclass(frozen=True)
@@ -58,6 +56,10 @@ class MySimulator(Simulator):
         self.__init_simulator()
 
     @property
+    def buffer_capacity(self) -> int:
+        return self._buffer_capacity
+
+    @property
     def fake_buffer(self) -> List[Request]:
         res: List[Request] = []
         for subbuffer in self._storage:
@@ -106,14 +108,14 @@ class MySimulator(Simulator):
     
     def _pick_device(self) -> Optional[int]:
         res: Optional[int] = None
-        check_occupied: Callable[[Tuple[int, DeviceStatistics]], bool] = lambda d: d[1].current_request is not None
+        check_not_occupied: Callable[[Tuple[int, DeviceStatistics]], bool] = lambda d: d[1].current_request is None
         pick_range = list(enumerate(self._devices))[self._next_device_index:]
-        i, candidate = next(filter(check_occupied, pick_range), (None, None))
+        i, candidate = next(filter(check_not_occupied, pick_range), (None, None))
         if (candidate is not None):
             res = i
         if (res is None):
             pick_range = list(enumerate(self._devices))[:self._next_device_index]
-            i, candidate = next(filter(check_occupied, pick_range), (None, None))
+            i, candidate = next(filter(check_not_occupied, pick_range), (None, None))
         if (candidate is not None):
             res = i
         if (res is not None):
@@ -121,12 +123,12 @@ class MySimulator(Simulator):
             self._next_device_index = 0 if (i == len(self._devices)) else i
         return res
     
-    def _device_processing_time(self, device_id: int, request: Request) -> float:
+    def _device_processing_time(self, device_id: int, request: Request) -> int:
         match (self._law):
             case SimulatorLaw.DETERMINISTIC:
                 return self._device_coefficients[device_id]
             case SimulatorLaw.STOCHASTIC:
-                return self._device_coefficients[device_id] * self._rangom_gen.expovariate(1.0)
+                return int(self._device_coefficients[device_id] * self._rangom_gen.expovariate(1.0))
             
         assert False, "Not all SimulatorLaw cases are managed"
 
