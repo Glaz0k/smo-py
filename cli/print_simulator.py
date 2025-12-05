@@ -3,9 +3,6 @@ from tabulate import tabulate
 from my_simulator import MySimulator
 from simulator import Request, SpecialEvent, SpecialEventType, MAX_TIME
 
-HIGHLIGHT = '\033[92m'
-HIGHLIGHT_END = '\033[0m'
-
 def print_simulation_state(sim: MySimulator) -> None:
     print("Sources calendar:")
     print_sources_calendar(sim)
@@ -36,16 +33,10 @@ def print_fake_buffer(sim: MySimulator) -> None:
     index_row = ["i:"]
     value_row = ["Values:"]
 
-    for i, request in enumerate(sim.fake_buffer):
+    for i, request in enumerate(sim.buffer):
         index_row.append(i)
         value = format_request(request)
-        if (request.source_id == sim.current_packet):
-            value = f"{HIGHLIGHT}{value}{HIGHLIGHT_END}"
         value_row.append(value)
-
-    for i in range(len(sim.fake_buffer), sim.buffer_capacity):
-        index_row.append(i)
-        value_row.append(format_request(None))
 
     table = [value_row]
     print(tabulate(tabular_data=table, headers=index_row))

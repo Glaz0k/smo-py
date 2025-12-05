@@ -135,13 +135,8 @@ class StepWindow(QWidget):
                 item.setTextAlignment(Qt.AlignCenter)
                 self.devices_table.setItem(i, j, item)
 
-        for i, request in enumerate(self.simulator.fake_buffer):
+        for i, request in enumerate(self.simulator.buffer):
             value = format_request(request)
-            item = QTableWidgetItem(value)
-            item.setTextAlignment(Qt.AlignCenter)
-            self.buffer_table.setItem(0, i, item)
-        for i in range(len(self.simulator.fake_buffer), self.simulator.buffer_capacity):
-            value = format_request(None)
             item = QTableWidgetItem(value)
             item.setTextAlignment(Qt.AlignCenter)
             self.buffer_table.setItem(0, i, item)

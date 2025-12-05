@@ -31,12 +31,8 @@ class MySimulator(Simulator):
 
         self._source_periods: List[int] = list(config.source_periods)
         self._device_coefficients: List[int] = list(config.device_coefficients)
-        self._storage: List[Deque[Request]] = [deque() for _ in range(len(config.source_periods))]
-        
         self._buffer_capacity: int = config.buffer_capacity
-        self._buffer_size: int = 0
-        self._current_packet: int = 0
-        self._next_device_index: int = 0
+        self._buffer: List[Optional[Request]] = [None for _ in range(config.buffer_capacity)]
 
         self.__init_simulator()
 
@@ -50,9 +46,7 @@ class MySimulator(Simulator):
 
     def reset(self, target_amount_of_requests: Optional[int] = None) -> None:
         super().reset(target_amount_of_requests)
-        for subbuffer in self._storage:
-            subbuffer.clear()
-        self._next_device_index = 0
+        self._buffer = [None for _ in range(self._buffer_capacity)]
         self.__init_simulator()
 
     @property
@@ -60,68 +54,37 @@ class MySimulator(Simulator):
         return self._buffer_capacity
 
     @property
-    def fake_buffer(self) -> List[Request]:
-        res: List[Request] = []
-        for subbuffer in self._storage:
-            for req in subbuffer:
-                res.append(copy(req))
-        res.sort(key=lambda req: (req.generation_time, req.source_id))
-        return res
-    
-    @property
-    def real_buffer(self) -> List[Deque[Request]]:
-        return deepcopy(self._storage)
+    def buffer(self) -> List[Optional[Request]]:
+        return deepcopy(self._buffer)
     
     def add_new_device(self, avg_processing_time: int) -> None:
         self._device_coefficients.append(avg_processing_time)
         self._devices.append(DeviceStatistics())
-
-    @property
-    def current_packet(self) -> int:
-        return self._current_packet
     
     def _put_in_buffer(self, request: Request) -> Optional[Request]:
-        rejected: Optional[Request] = None
+        for i, buffer_val in enumerate(self._buffer):
+            if (buffer_val is None):
+                self._buffer[i] = request
+                return None
         
-        if (self._buffer_size == self._buffer_capacity):
-            non_empty = next(filter(lambda b: b, self._storage))
-            rejected = non_empty.pop()
-            self._buffer_size -= 1
-        
-        self._storage[request.source_id].append(request)
-        self._buffer_size += 1
-        return rejected
+        return request
 
     def _take_from_buffer(self) -> Optional[Request]:
-        if (self._buffer_size == 0):
+        buffer_requests = [(i, req) for (i, req) in enumerate(self._buffer) if req is not None]
+        if (len(buffer_requests) == 0):
             return None
         
-        subbuffer = self._storage[self._current_packet]
-        if (not subbuffer):
-            i, non_empty = next(filter(lambda b: b[1], enumerate(self._storage)))
-            self._current_packet = i
-            subbuffer = non_empty
-        
-        res = subbuffer.pop()
-        self._buffer_size -= 1
+        buffer_requests.sort(key=lambda req: (req[1].source_id, req[1].generation_time))
+        (i, res) = buffer_requests[0]
+        self._buffer[i] = None
         return res
     
     def _pick_device(self) -> Optional[int]:
-        res: Optional[int] = None
-        check_not_occupied: Callable[[Tuple[int, DeviceStatistics]], bool] = lambda d: d[1].current_request is None
-        pick_range = list(enumerate(self._devices))[self._next_device_index:]
-        i, candidate = next(filter(check_not_occupied, pick_range), (None, None))
-        if (candidate is not None):
-            res = i
-        if (res is None):
-            pick_range = list(enumerate(self._devices))[:self._next_device_index]
-            i, candidate = next(filter(check_not_occupied, pick_range), (None, None))
-        if (candidate is not None):
-            res = i
-        if (res is not None):
-            i += 1
-            self._next_device_index = 0 if (i == len(self._devices)) else i
-        return res
+        for i, device in enumerate(self._devices):
+            if (device.current_request is None):
+                return i
+            
+        return None
     
     def _device_processing_time(self, device_id: int, request: Request) -> int:
         match (self._law):
