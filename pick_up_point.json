@@ -1,0 +1,11 @@
+{
+    "requests": 1000,
+    "buffer": 5,
+    "sources": [
+        12,
+        6
+    ],
+    "devices": [
+        10
+    ]
+}

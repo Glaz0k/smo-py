@@ -14,7 +14,7 @@ class MainWindow(QWidget):
         self.simulator_config: Optional[SimulatorConfig] = None
         
     def initUI(self):
-        self.setWindowTitle('Симулятор системы массового обслуживания')
+        self.setWindowTitle('Симулятор СМО')
         self.setFixedSize(400, 250)
         
         # Заголовок
@@ -66,10 +66,10 @@ class MainWindow(QWidget):
                 with open(file_name, 'r') as f:
                     config_dict = json.load(f)
                     self.simulator_config = SimulatorConfig(
-                        target_amount_of_requests = config_dict['target_amount_of_requests'],
-                        buffer_capacity = config_dict['buffer_capacity'],
-                        source_periods = config_dict['source_periods'],
-                        device_coefficients = config_dict['device_coefficients']
+                        target_amount_of_requests = config_dict['requests'],
+                        buffer_capacity = config_dict['buffer'],
+                        source_periods = config_dict['sources'],
+                        device_coefficients = config_dict['devices']
                     )
             except KeyError as e:
                 QMessageBox.critical(self, 'Ошибка', 'Неверная конфигурация')
