@@ -1,0 +1,11 @@
+{
+    "target_amount_of_requests": 1000,
+    "buffer_capacity": 5,
+    "source_periods": [
+        12,
+        60
+    ],
+    "device_coefficients": [
+        60
+    ]
+}

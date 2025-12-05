@@ -48,8 +48,8 @@ class MySimulator(Simulator):
                 i
             ))
 
-    def reset(self) -> None:
-        super().reset()
+    def reset(self, target_amount_of_requests: Optional[int] = None) -> None:
+        super().reset(target_amount_of_requests)
         for subbuffer in self._storage:
             subbuffer.clear()
         self._next_device_index = 0

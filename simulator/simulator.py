@@ -28,7 +28,7 @@ class Simulator(ABC):
         while (not self.is_completed()):
             self.__step()
 
-    def reset(self) -> None:
+    def reset(self, target_amount_of_requests: Optional[int] = None) -> None:
         self._sources = [SourceStatistics() for _ in range(len(self._sources))]
         self._devices = [DeviceStatistics() for _ in range(len(self._devices))]
         self.__special_events = []
@@ -36,9 +36,8 @@ class Simulator(ABC):
         self.__rejected_amount = 0
         self.__current_simulation_time = 0
 
-    def reset(self, target_amount_of_requests: int):
-        self.reset()
-        self.__target_amount_of_requests = target_amount_of_requests
+        if (target_amount_of_requests is not None):
+            self.__target_amount_of_requests = target_amount_of_requests
 
     def is_completed(self) -> bool:
         return len(self.__special_events) == 0
