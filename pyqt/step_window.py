@@ -49,9 +49,9 @@ class StepWindow(QWidget):
         sources_layout = QVBoxLayout()
         self.sources_table = QTableWidget()
         self.sources_table.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.sources_table.setColumnCount(3)
+        self.sources_table.setColumnCount(4)
         self.sources_table.setRowCount(len(self.simulator.source_statistics))
-        self.sources_table.setHorizontalHeaderLabels(['i', 'След. событие', 'Знак'])
+        self.sources_table.setHorizontalHeaderLabels(['i', 'След. событие', 'Окончил', 'Отказы'])
         self.sources_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.sources_table.verticalHeader().setVisible(False)
         sources_layout.addWidget(self.sources_table)
@@ -64,7 +64,7 @@ class StepWindow(QWidget):
         self.devices_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.devices_table.setColumnCount(4)
         self.devices_table.setRowCount(len(self.simulator.device_statistics))
-        self.devices_table.setHorizontalHeaderLabels(['i', 'След. событие', 'Знак', 'Запрос'])
+        self.devices_table.setHorizontalHeaderLabels(['i', 'След. событие', 'Свободен', 'Запрос'])
         self.devices_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.devices_table.verticalHeader().setVisible(False)
         devices_layout.addWidget(self.devices_table)
@@ -82,8 +82,8 @@ class StepWindow(QWidget):
         self.buffer_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.buffer_table.setColumnCount(self.simulator.buffer_capacity)
         self.buffer_table.setHorizontalHeaderLabels([str(i) for i in range(self.simulator.buffer_capacity)])
-        self.buffer_table.setRowCount(1)
-        self.buffer_table.setVerticalHeaderLabels(['Значения:'])
+        self.buffer_table.setRowCount(3)
+        self.buffer_table.setVerticalHeaderLabels(['Источник', 'Время', 'Номер'])
         self.buffer_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         buffer_layout.addWidget(self.buffer_table)
         buffer_group.setLayout(buffer_layout)
@@ -121,7 +121,7 @@ class StepWindow(QWidget):
     def update_values(self):
         for i, source_stat in enumerate(self.simulator.source_statistics):
             time, sign = get_time_and_sign(source_stat.next_request_time)
-            row = [str(i), str(time) if time else '', str(sign)]
+            row = [str(i), str(time) if time else '', str(sign), str(source_stat.rejected)]
             for j, value in enumerate(row):
                 item = QTableWidgetItem(value)
                 item.setTextAlignment(Qt.AlignCenter)
@@ -135,11 +135,14 @@ class StepWindow(QWidget):
                 item.setTextAlignment(Qt.AlignCenter)
                 self.devices_table.setItem(i, j, item)
 
-        for i, request in enumerate(self.simulator.buffer):
-            value = format_request(request)
-            item = QTableWidgetItem(value)
-            item.setTextAlignment(Qt.AlignCenter)
-            self.buffer_table.setItem(0, i, item)
+        for j, request in enumerate(self.simulator.buffer):
+            row = ['', '', '']
+            if request is not None:
+                row = list(map(str, [request.source_id, request.generation_time, request.number]))
+            for i, value in enumerate(row):
+                item = QTableWidgetItem(value)
+                item.setTextAlignment(Qt.AlignCenter)
+                self.buffer_table.setItem(i, j, item)
     
     def step_simulation(self):
         event = self.simulator.step()

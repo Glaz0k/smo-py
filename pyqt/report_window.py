@@ -20,6 +20,7 @@ class ReportWindow(QWidget):
         report_group = QGroupBox('Отчёт')
         report_layout = QVBoxLayout()
         self.report_table = QTableWidget()
+        self.report_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.report_table.setRowCount(1)
         self.report_table.setColumnCount(5)
         self.report_table.setHorizontalHeaderLabels([
@@ -38,6 +39,7 @@ class ReportWindow(QWidget):
         sources_group = QGroupBox('Источники')
         sources_layout = QVBoxLayout()
         self.sources_report_table = QTableWidget()
+        self.sources_report_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.sources_report_table.setColumnCount(8)
         self.sources_report_table.setHorizontalHeaderLabels([
             'i', 'Кол-во\n запросов', 'Вероятность\n отказа', 'Полное\n время',
@@ -52,6 +54,7 @@ class ReportWindow(QWidget):
         devices_group = QGroupBox('Приборы')
         devices_layout = QVBoxLayout()
         self.devices_report_table = QTableWidget()
+        self.devices_report_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.devices_report_table.setColumnCount(2)
         self.devices_report_table.setHorizontalHeaderLabels(['i', 'Коэффициент использования'])
         self.devices_report_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
